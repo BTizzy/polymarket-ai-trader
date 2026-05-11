@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymarket AI Trading Game - Simple Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Polymarket AI Trading Game</h1>
+            <div class="bankroll">Bankroll: $<span id="bankroll">1000</span></div>
+        </header>
+
+        <div class="game-area">
+            <div class="market-grid" id="marketGrid">
+                <!-- Mock markets for testing -->
+                <div class="market-square green">
+                    <div class="market-question">Will Bitcoin reach $100k by end of 2024?</div>
+                    <div class="market-price">Buy: $3</div>
+                    <div class="market-volatility">AI: 85% | Vol: green</div>
+                </div>
+                <div class="market-square yellow">
+                    <div class="market-question">Will it rain in New York tomorrow?</div>
+                    <div class="market-price">Buy: $5</div>
+                    <div class="market-volatility">AI: 78% | Vol: yellow</div>
+                </div>
+                <div class="market-square red">
+                    <div class="market-question">Will Tesla stock go up 10% next week?</div>
+                    <div class="market-price">Buy: $8</div>
+                    <div class="market-volatility">AI: 82% | Vol: red</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="startSession">Start New Session</button>
+            <button id="endSession" disabled>End Session</button>
+        </div>
+
+        <div class="api-key-section" id="apiKeySection">
+            <h3>Enter Groq API Key</h3>
+            <input type="password" id="groqApiKey" placeholder="Enter your Groq API key">
+            <button id="saveApiKey">Save API Key</button>
+            <p class="api-key-note">Get your free API key from <a href="https://console.groq.com" target="_blank">console.groq.com</a></p>
+        </div>
+    </div>
+</body>
+</html>

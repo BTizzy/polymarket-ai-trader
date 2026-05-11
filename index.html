@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymarket AI Trading Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Polymarket AI Trading Game</h1>
+            <div class="bankroll">Bankroll: $<span id="bankroll">1000</span></div>
+        </header>
+
+        <div class="game-area">
+            <div class="market-grid" id="marketGrid">
+                <!-- Markets will be populated here -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="startSession">Start New Session</button>
+            <button id="endSession" disabled>End Session</button>
+        </div>
+
+        <div class="api-key-section" id="apiKeySection">
+            <h3>Enter Groq API Key</h3>
+            <input type="password" id="groqApiKey" placeholder="Enter your Groq API key">
+            <button id="saveApiKey">Save API Key</button>
+            <p class="api-key-note">Get your free API key from <a href="https://console.groq.com" target="_blank">console.groq.com</a></p>
+        </div>
+
+        <!-- Session Report -->
+        <div class="session-report" id="sessionReport" style="display: none;">
+            <h2>Session Report</h2>
+            <div id="reportContent">
+                <!-- Report content will be populated here -->
+            </div>
+        </div>
+
+        <!-- Trade Modal -->
+        <div class="trade-modal" id="tradeModal" style="display: none;">
+            <div class="trade-modal-content">
+                <div class="trade-header">
+                    <h3 id="tradeQuestion">Market Question</h3>
+                    <div class="timer-display">
+                        <span id="timer">30</span>s
+                    </div>
+                </div>
+
+                <div class="trade-info">
+                    <div class="pnl-display">
+                        <span class="pnl-label">P&L:</span>
+                        <span id="currentPnl" class="pnl-value">+$0.00</span>
+                    </div>
+                    <div class="entry-info">
+                        <span>Entry: $<span id="entryPrice">0.00</span></span>
+                        <span>Current: $<span id="currentPrice">0.00</span></span>
+                    </div>
+                </div>
+
+                <div class="timer-options">
+                    <label>Timer:</label>
+                    <select id="timerSelect">
+                        <option value="10">10s</option>
+                        <option value="15">15s</option>
+                        <option value="20">20s</option>
+                        <option value="30" selected>30s</option>
+                    </select>
+                </div>
+
+                <div class="trade-controls">
+                    <button id="sellNowBtn">Sell Now</button>
+                    <button id="cancelTradeBtn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">/Users/ryanbartell/polymarket-ai-trader/index.html
