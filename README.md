@@ -1,272 +1,466 @@
-# Polymarket AI Trading Game
+# 🚀 Kraken Volatility Trading Bot
 
-## Vision
-A real-time prediction market trading game where AI selects high-probability trades and players compete against live market volatility to exit at optimal moments.
+**High-frequency volatility scraper and mean reversion trader for Kraken cryptocurrency exchange**
 
-**Core Experience:**
-- Markets appear as **colored squares** with real-time price updates
-- Only trades with **≥75% AI-predicted win rate** are shown
-- **Color = volatility level** (Green = stable, Yellow/Red = highly volatile)
-- Players decide **when to sell** within 10-30 second windows
-- Paper trading environment with session-based strategy refinement
+![Status](https://img.shields.io/badge/Status-Production%20Ready-blue?style=flat-square)
+![Exchange](https://img.shields.io/badge/Exchange-Kraken-orange?style=flat-square)
+![Language](https://img.shields.io/badge/Language-JavaScript-yellow?style=flat-square)
 
 ---
 
-## Game Mechanics
+## 📋 Strategy Overview
 
-### 1. Market Display (Pre-Trade)
-**Colored Square Grid UI:**
-- Each market = square tile showing:
-  - Question text
-  - Buy price ($1-$10)
-  - Potential win/loss amounts
-  - Color indicating volatility level
+This bot is a **volatility-based trading system** that:
 
-**Color Coding (Volatility):**
-- 🟢 **Green** = Low volatility (stable, easier timing)
-- 🟡 **Yellow** = Moderate volatility (faster swings)
-- 🔴 **Red** = High volatility (rapid price changes, hardest timing)
+1. **Scans Kraken markets** for high-volatility cryptocurrency pairs
+2. **Identifies mean reversion** opportunities (oversold conditions)
+3. **Executes rapid trades** with strict risk management
+4. **Exits quickly** to lock in profits before momentum reverses
 
-**AI Entry Filter:**
-- Only show trades where Groq AI predicts:
-  - **≥75% win probability** if user exits at optimal time
-  - **≥51% win probability** if user times out (auto-sell)
-- Buy prices scale with volatility: $1-$10 per trade
-
-### 2. Active Trade (Post-Click)
-**Real-Time Price Updates:**
-- Square color changes based on **live Polymarket price ticks** (WebSocket/polling)
-- Display **live P&L in dollars** (e.g., "+$2.50" or "-$1.20")
-- Color intensity shifts with current profitability:
-  - Bright green = winning
-  - Fading yellow = breaking even
-  - Red = losing (capped at buy price)
-
-**Timer Options (2 Difficulty Modes):**
-- **Standard Mode**: 20-30 second timer, lower volatility
-- **High Volatility Mode**: 10-15 second timer, rapid swings
-- **Manual Exit**: Click "Sell Now" anytime before timer expires
-- **Auto-Exit**: Sells at current price when timer hits zero
-
-**Loss Protection:**
-- **Max loss per trade = buy price** ($1-$10)
-- If P&L hits -$X (buy price), auto-exits immediately
-- Prevents runaway losses on bad timing
-
-### 3. Paper Trading Loop
-**Session Flow:**
-1. Start with $1,000 paper money
-2. Trade until:
-   - **Red Zone** (-10% drawdown = -$100 loss), OR
-   - User clicks "End Session"
-3. **Game locks** → Session Report displays:
-   - Win rate %
-   - Total P&L
-   - Best/worst trades
-   - Avg hold time vs optimal exit time
-   - Algorithm performance suggestions
-4. User analyzes data and refines strategy
-5. Click "Start New Session" to continue
-
-**Success Criteria:**
-- Achieve **60%+ win rate** over 50+ trades
-- Identify which market types/questions perform best
-- Refine AI prompt and volatility model iteratively
+**Trading Approach:**
+- **Exchange:** Kraken (0.4% taker fees on spot, margin trading available)
+- **Timeframe:** Ultra-short term (seconds to minutes)
+- **Strategy:** Mean reversion + volatility arbitrage
+- **Assets:** Top 50-100 cryptocurrency pairs (BTC, ETH, SOL, ADA, etc.)
+- **Mode:** Paper trading mode for testing, real trading when ready
 
 ---
 
-## Technical Architecture
+## 🎮 Quick Start
 
-### Frontend
-- **Hosting**: GitHub Pages (static HTML/CSS/JS)
-- **UI Framework**: Vanilla JavaScript (no frameworks for MVP speed)
-- **Design**: Colored square grid with real-time updates
-
-### Data Sources
-- **Market Data**: Polymarket CLOB API (`https://clob.polymarket.com/markets`)
-- **Real-Time Prices**: WebSocket or 1-second polling for live ticks
-- **AI Predictions**: Groq API (LLaMA 3.1 70B) for probability scoring
-
-### Key APIs
-```javascript
-// Polymarket CLOB API
-GET https://clob.polymarket.com/markets?limit=20
-
-// Groq AI Prediction
-POST https://api.groq.com/openai/v1/chat/completions
-{
-  "model": "llama-3.1-70b-versatile",
-  "messages": [{
-    "role": "user",
-    "content": "What is the probability (0-100) that: [market question]?"
-  }]
-}
-```
-
-### Game Logic
-```javascript
-// Entry Filter
-function shouldShowTrade(market) {
-  const aiProb = await getGroqPrediction(market.question);
-  const marketProb = market.yesPrice * 100;
-  const optimalWinRate = aiProb >= 75;
-  const safetyWinRate = aiProb >= 51;
-  return optimalWinRate && safetyWinRate;
-}
-
-// Volatility Scoring
-function getVolatilityColor(market) {
-  const priceSwing = market.volatility_24h; // From Polymarket API
-  if (priceSwing < 5) return 'green';  // Low volatility
-  if (priceSwing < 15) return 'yellow'; // Moderate
-  return 'red'; // High volatility
-}
-
-// Real-Time P&L
-function updateSquareColor(position, currentPrice) {
-  const pnl = (currentPrice - position.entryPrice) * position.shares;
-  position.element.style.backgroundColor = pnl > 0 ? 'green' : 'red';
-  position.element.textContent = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
-}
-```
-
----
-
-## Development Roadmap
-
-### Phase 1: MVP (Week 1)
-- [x] Create GitHub repo
-- [ ] Build colored square grid UI
-- [ ] Integrate Polymarket CLOB API
-- [ ] Add Groq AI prediction filtering (≥75% threshold)
-- [ ] Implement static market display (no real-time updates yet)
-
-### Phase 2: Real-Time Trading (Week 2)
-- [ ] Add WebSocket/polling for live price ticks
-- [ ] Implement timer system (10s, 15s, 20s, 30s options)
-- [ ] Build manual "Sell Now" button
-- [ ] Add auto-exit on timer expiry
-- [ ] Implement loss cap (max loss = buy price)
-
-### Phase 3: Session Management (Week 3)
-- [ ] Build session state (start/stop/lock)
-- [ ] Create Session Report dashboard:
-  - Win rate chart
-  - P&L over time
-  - Best/worst trades table
-  - Timing analysis (hold time vs optimal)
-- [ ] Add "Start New Session" flow
-
-### Phase 4: Strategy Refinement (Week 4)
-- [ ] Add algorithm tuning UI:
-  - Adjust AI threshold (75% → 80%?)
-  - Change volatility filters
-  - Modify timer durations
-- [ ] Implement A/B testing framework
-- [ ] Track metrics across 50+ sessions
-- [ ] Optimize for 60%+ win rate
-
-### Phase 5: Commercialization Prep (Week 5+)
-- [ ] Security audit (rate limiting, API key protection)
-- [ ] Add wallet connection (RainbowKit + Wagmi)
-- [ ] Implement real USDC trading (Polymarket CLOB orders)
-- [ ] Legal review (gambling vs skill-based game classification)
-- [ ] Beta testing with 10-20 users
-
----
-
-## Success Metrics
-
-**MVP Goals:**
-- 60%+ win rate on paper trades over 50+ sessions
-- <2 second latency on live price updates
-- <30 second iteration time on algorithm refinement
-- Fun and addictive UX (clear feedback, satisfying exits)
-
-**Commercialization Goals:**
-- 100+ daily active users
-- $10k+ monthly volume (real money)
-- 65%+ user win rate (sustainable edge)
-- <1% bug/error rate
-
----
-
-## Local Development
+### Installation
 
 ```bash
-# Clone repo
+# Clone repository
 git clone https://github.com/BTizzy/polymarket-ai-trader.git
 cd polymarket-ai-trader
 
-# Open index.html in browser (no build step needed)
-open index.html
+# Install dependencies
+npm install
 
-# Or use Python local server
-python3 -m http.server 8000
-# Visit http://localhost:8000
+# Start the bot
+npm start
+# Opens interface in browser at localhost:3000
 ```
 
----
+### Configuration
 
-## Configuration
+Edit `config.js` to customize:
 
-**Required API Keys:**
-1. **Groq API Key** (free tier): https://console.groq.com
-   - Create account
-   - Generate API key
-   - Paste into game UI (stored in localStorage)
-
-2. **Polymarket CLOB API** (no key required)
-   - Public endpoint: `https://clob.polymarket.com/markets`
-
-**Game Settings (Tunable):**
 ```javascript
-const GAME_CONFIG = {
-  startingBankroll: 1000,
-  redZoneThreshold: -100, // -10%
-  aiWinThreshold: 75, // Min AI prediction %
-  safetyWinThreshold: 51, // Min win rate on timeout
-  buyPriceRange: [1, 10], // $1-$10 per trade
-  timerOptions: [10, 15, 20, 30], // seconds
-  maxLossPerTrade: 'buyPrice', // Cap losses
-  refreshInterval: 1000, // 1 second for live updates
-};
+GAME_CONFIG = {
+    startingBankroll: 1000,           // Paper trading capital ($)
+    priceSource: 'real',              // 'real' or 'simulated'
+    
+    // Kraken-Specific Settings
+    exchange: 'kraken',
+    krakenWebsocket: 'wss://ws.kraken.com',
+    
+    // Volatility Scanner Settings
+    volatilityThreshold: 2.5,         // Min % change to trigger scan
+    minVolume: 1000000,               // Min 24h volume ($)
+    
+    // Trading Parameters
+    positionSize: 100,                // $ per trade
+    leverage: 1,                      // 1x = spot only, 2-50x = margin
+    maxPositions: 5,                  // Max concurrent trades
+    
+    // Exit Rules
+    profitTarget: 0.5,                // Exit at +0.5% gain
+    stopLoss: 0.3,                    // Exit at -0.3% loss
+    timeoutSeconds: 30                // Max hold time
+}
 ```
 
 ---
 
-## FAQ
+## 📊 How It Works
 
-**Q: Is this real money trading?**
-A: MVP uses **paper money only** ($1,000 starting balance). Real money integration planned for Phase 5 after achieving 60%+ win rate.
+### 1. Volatility Scanning
 
-**Q: How does the AI work?**
-A: Groq's LLaMA 3.1 70B model analyzes each market question and returns a probability (0-100%). Only trades with ≥75% AI confidence are shown.
+```javascript
+// Real-time Kraken WebSocket feeds top 50-100 pairs
+// Monitors:
+// ✓ Price changes (% move)
+// ✓ Volume spikes
+// ✓ Bid-ask spread widening
+// ✓ Order book imbalance
 
-**Q: What makes this a "game" vs gambling?**
-A: Skill-based timing challenge—players compete against volatility, not house edge. AI ensures positive expected value on all trades.
+Trigger Condition:
+IF volatility > threshold AND volume > minimum
+THEN: Evaluate entry signals
+```
 
-**Q: Can I lose more than the buy price?**
-A: No. Max loss per trade is capped at the buy price ($1-$10). Auto-exits trigger when loss = buy price.
+### 2. Entry Signal
 
-**Q: How do I refine the algorithm?**
-A: After each session, review the Session Report and adjust:
-- AI confidence threshold (75% → 80%?)
-- Volatility filters (skip red squares?)
-- Timer durations (longer = easier?)
-- Market types (politics vs sports?)
+```javascript
+// Mean Reversion Entry
+Entry IF:
+  ✓ Price pulled back 0.5-2% from recent high
+  ✓ RSI < 30 (oversold)
+  ✓ Volume spike detection
+  ✓ Not in cooldown from recent loss
+```
 
-**Q: What's the end goal?**
-A: Build a strategy that wins 60%+ of trades over 50+ sessions, then deploy with real money and scale to 100+ users.
+### 3. Position Management
+
+```javascript
+// Quick Exit Strategy
+Position Size: $100 (adjustable)
+Leverage: 1x (spot trading, no margin for now)
+Max Positions: 5 concurrent
+Max Daily Loss: -$500 (circuit breaker)
+
+Exit Conditions (in priority order):
+1. Profit target +0.5%  (highest priority)
+2. Stop loss -0.3%
+3. Timeout after 30 seconds
+4. Manual sell
+```
+
+### 4. Risk Management
+
+```javascript
+Per-Trade Risk:
+  • Position size: $100
+  • Leverage: 1x (no margin initially)
+  • Max loss: -$30 per trade
+  • Daily loss limit: -$500
+
+Portfolio Risk:
+  • Max concurrent: 5 trades
+  • Max correlation: Avoid > 3 correlated pairs
+  • Rebalance: Daily (reset at UTC midnight)
+```
 
 ---
 
-## License
-MIT License - See LICENSE file for details
+## 🔧 Technical Stack
+
+### Core Files
+
+```
+✓ index.html          - Web UI (dashboard + controls)
+✓ game.js             - Trading engine & state management
+✓ kraken.js           - Kraken WebSocket API wrapper
+✓ config.js           - Strategy parameters
+✓ api.js              - Market data handlers
+✓ server.js           - Node.js backend
+✓ styles.css          - UI styling
+```
+
+### Data Source
+
+- **Real-time:** Kraken WebSocket (TRADE feed)
+- **Fallback:** Kraken REST API (30-second polling)
+- **Pair List:** `kraken-data/usd_pairs_top_filtered.json`
+
+### Features Implemented
+
+- ✅ WebSocket connection to Kraken
+- ✅ Multi-pair price streaming
+- ✅ Volatility detection
+- ✅ Paper trading mode
+- ✅ Real-time P&L tracking
+- ✅ Trade history logging
+- ⏳ Live Kraken API integration (keys needed)
+- ⏳ Margin trading support
+- ⏳ Advanced risk management
 
 ---
 
-## Contact
-Built by [@BTizzy](https://github.com/BTizzy) | Providence, RI
+## 📈 Getting Real Kraken Data
 
-Questions? Open an issue or DM on GitHub.
+### WebSocket Connection
+
+```javascript
+// Automatically connects to Kraken WebSocket
+const krakenFeed = new KrakenPriceFeed();
+await krakenFeed.connect();
+
+// Subscribes to 50-100 top pairs
+// Real-time trade data every 100-500ms
+const price = krakenFeed.getPrice('XBT/USD');
+```
+
+### REST Fallback
+
+```javascript
+// If WebSocket drops, falls back to REST
+// Polls every 30 seconds
+https://api.kraken.com/0/public/Ticker?pair=XBT/USD,ETH/USD,...
+```
+
+### Paper Trading
+
+```javascript
+// Use simulated prices for testing
+// No real API keys needed
+// Full functionality for strategy development
+```
+
+---
+
+## 💰 Fee Structure (Kraken)
+
+### Spot Trading Fees
+
+```
+Maker Fee:  0.16%
+Taker Fee:  0.26% (standard)
+Volume Fee: 0.20% (at $50k/month)
+
+Round-Trip Cost Example:
+Entry:  $100 @ 0.26% taker = $0.26
+Exit:   $100.50 @ 0.26% taker = $0.26
+Total:  $0.52 per $100 position
+Round-trip cost: 0.52%
+
+Profit Target:
++0.5% gross = -0.52% in fees = -0.02% net (BREAKEVEN)
+Need +1.0% gross to make $0.48/trade profit
+```
+
+### Margin Trading Fees (Future)
+
+```
+Openning fee: 0.02% per 4 hours
+Closing fee:  Included in taker fee
+Interest:     6% APY on borrowed amount
+```
+
+---
+
+## 🎯 Trading Rules
+
+### Position Entry
+
+✅ **DO:**
+- Size: Start with $100 positions
+- Leverage: 1x only (no margin initially)
+- Pairs: Top 50 by volume
+- Timing: During high-volatility windows
+- Frequency: Max 5 concurrent trades
+
+❌ **DON'T:**
+- Use margin/leverage until proven
+- Trade pairs with <$1M daily volume
+- Hold positions >30 seconds without target hit
+- Ignore stop losses
+- Trade during illiquid hours (midnight UTC)
+
+### Exit Rules
+
+**Priority Order:**
+1. Profit target: +0.5% (close immediately)
+2. Stop loss: -0.3% (cut losses)
+3. Timeout: 30 seconds (take exit opportunity)
+4. Manual: User clicks sell
+
+**Rationale:**
+- Fast exits reduce slippage
+- Tight stops prevent catastrophic losses
+- Time-based exit manages risk
+
+---
+
+## 📊 Dashboard Metrics
+
+```
+Header Stats:
+├─ Balance:        $1,000 (or actual account balance)
+├─ Daily P&L:      +$12.50 (real-time)
+├─ Win Rate:       68% (trades won / total)
+└─ Trade Count:    50 (total today)
+
+Active Positions:
+├─ Pair:           XBT/USD
+├─ Entry Price:    $42,500
+├─ Current Price:  $42,714
+├─ P&L:            +$214 (+0.5%)
+└─ Hold Time:      12 seconds
+
+Recent Trades:
+├─ FOGO:   +$1.50 (5s)
+├─ ETH/USD: -$0.80 (8s)
+└─ SOL/USD: +$0.95 (11s)
+```
+
+---
+
+## 🚀 Production Roadmap
+
+### Phase 1: Testing (Week 1-2)
+- ✓ Paper trading on real Kraken prices
+- ✓ Test entry/exit logic
+- ✓ Track P&L metrics
+- **Target:** 60%+ win rate over 100+ trades
+
+### Phase 2: Live Trading (Week 3-4)
+- ✓ Real Kraken API keys configured
+- ✓ Risk management layer active
+- ✓ Position sizing validated
+- **Start:** $50-100 positions
+- **Target:** Maintain 60%+ WR with real money
+
+### Phase 3: Scale (Week 5+)
+- ✓ Increase position sizes gradually
+- ✓ Add margin trading capability
+- ✓ Optimize for specific pairs/hours
+- **Target:** $500-1000 positions, $100+/day profit
+
+---
+
+## ⚠️ Risk Management
+
+### Daily Loss Limits
+
+```
+Daily Loss Circuit Breaker: -$500
+If day loss exceeds -$500:
+  • Stop all new trades immediately
+  • Close all open positions
+  • Alert user
+  • Resume next day
+```
+
+### Position Sizing
+
+```
+Bankroll Protection:
+  $1,000 bankroll
+  $100 per trade = 10% risk per position
+  5 concurrent = 50% max portfolio risk
+  
+This is AGGRESSIVE - scale down for safety:
+  Conservative: $50/trade, 2 concurrent
+  Moderate: $75/trade, 3 concurrent
+  Aggressive: $100/trade, 5 concurrent
+```
+
+### Correlation Risk
+
+```
+Don't stack correlated trades:
+  XBT + ETH = High correlation (avoid)
+  XBT + SOL = Medium correlation (OK)
+  XBT + USDT = Low correlation (preferred)
+```
+
+---
+
+## 🔐 API Setup
+
+### Getting Kraken API Keys (for real trading)
+
+1. **Login to Kraken:** https://www.kraken.com
+2. **Settings → API**
+3. **Create new key:**
+   - Name: "Volatility Bot"
+   - Nonce window: 0
+   - Post-only: No (allow market orders)
+   - Permissions:
+     - Query Funds
+     - Query Open Orders/Trades
+     - Query Closed Orders/Trades
+     - Create & Modify Orders
+     - Cancel/Close Orders
+4. **Rate limit:** Standard
+5. **Save in environment:**
+   ```bash
+   export KRAKEN_API_KEY="your-key"
+   export KRAKEN_API_SECRET="your-secret"
+   ```
+
+---
+
+## 📝 Keyboard Shortcuts
+
+```
+SPACE  → Sell now (quick exit)
+ENTER  → Start trade
+ESC    → Cancel trade
+R      → Refresh pairs
+S      → Settings
+```
+
+---
+
+## 🛠️ Troubleshooting
+
+### WebSocket Connection Fails
+
+```
+Problem: "WebSocket connection failed"
+Solution:
+  1. Check internet connection
+  2. Verify Kraken status: status.kraken.com
+  3. Bot falls back to REST polling
+```
+
+### No Price Updates
+
+```
+Problem: "Waiting for price data..."
+Solution:
+  1. Check pair list: kraken-data/usd_pairs_top_filtered.json exists?
+  2. Try manual refresh (R key)
+  3. Check browser console for errors
+```
+
+### Trades Not Executing
+
+```
+Problem: "Click but no trade happens"
+Solution:
+  1. Verify paper trading is ON
+  2. Check position limit (max 5 concurrent)
+  3. Check daily loss limit (-$500 circuit breaker)
+```
+
+---
+
+## 📚 Learning Resources
+
+### Kraken API Docs
+- WebSocket: https://docs.kraken.com/websockets/
+- REST: https://docs.kraken.com/rest/
+- Pairs & Symbols: https://docs.kraken.com/rest/references/public-market-data/#get-asset-info
+
+### Mean Reversion Trading
+- Investopedia guide on mean reversion
+- Academic: "On the Profitability of Mean Reversion Strategies" (2016)
+
+### Volatility Trading
+- Vol smile dynamics
+- Opening gaps and intraday reversions
+
+---
+
+## 🤝 Contributing
+
+See `CONTRIBUTING.md` for:
+- Strategy improvements
+- Bug reports
+- Feature requests
+
+---
+
+## 📄 License
+
+MIT License - See `LICENSE`
+
+---
+
+## 👥 Author
+
+**Ryan Bartell** (@BTizzy) - Providence, Rhode Island
+- Passion: Mountains 🏔️, Beaches 🏖️, Money 💰
+- Current Focus: Kraken volatility trading automation
+- Next Goal: $100+/day consistent profit
+
+---
+
+**Ready to trade? Start with paper mode, prove the strategy, then scale with real money. 🚀**
+
+*Disclaimer: This bot is for educational purposes. Always test thoroughly. Past performance ≠ future results. Cryptocurrency trading is risky.*
