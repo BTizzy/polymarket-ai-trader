@@ -7,7 +7,13 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="tradeHistoryModal" style="display:none;">
+    <div class="trade-history-panel">
+        <h2>📋 Trade History</h2>
+        <div id="tradeHistoryList"></div>
+        <button onclick="document.getElementById('tradeHistoryModal').style.display='none'">Close</button>
+    </div>
+</div>
         <header>
             <h1>Polymarket AI Trading Game</h1>
             <div class="bankroll">Bankroll: $<span id="bankroll">1000</span></div>
@@ -22,6 +28,10 @@
         <div class="controls">
             <button id="startSession">Start New Session</button>
             <button id="endSession" disabled>End Session</button>
+            <span class="status-indicator" id="apiStatus">⏳ Loading...</span>
+        </div>
+        <div class="stats-bar">
+            Markets: <span id="marketCount">0</span> | Session Trades: <span id="tradeCount">0</span>
         </div>
 
         <div class="api-key-section" id="apiKeySection">
@@ -71,11 +81,14 @@
                 </div>
 
                 <div class="trade-controls">
-                    <button id="sellNowBtn">Sell Now</button>
-                    <button id="cancelTradeBtn">Cancel</button>
+                    <button id="sellNowBtn">Sell Now <span class="shortcut-hint">Space</span></button>
+                    <button id="cancelTradeBtn">Cancel <span class="shortcut-hint">Esc</span></button>
                 </div>
             </div>
         </div>
+
+        <!-- Toast Notification -->
+        <div id="toast"></div>
     </div>
 
     <script src="script.js"></script>
